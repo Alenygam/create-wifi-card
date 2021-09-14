@@ -1,0 +1,20 @@
+#!/bin/bash
+
+[ -z "$1" ] && echo "Provide output .png file or die" && exit 1;
+
+unixTime=$(date +'%s')
+tmpDir="/tmp/create-wifi-card$unixTime"
+
+mkdir "$tmpDir" 
+
+source wifiqr -f="${tmpDir}/qrcode.png"
+
+# Reverts escaping of characters
+ssid=$(echo "$ssid" | sed 's/\\//g')
+password=$(echo "$password" | sed 's/\\//g')
+
+convert "${tmpDir}/qrcode.png" -paint 1 "${tmpDir}/qrcode.png"
+convert -pointsize "22" -size 860x410 xc:white -draw "image over 0,0,410,410 \"${tmpDir}/qrcode.png\" text 410,193 \"SSID: ${ssid}\" text 410,217 \"Password: ${password}\"" "${tmpDir}/result.png"
+
+cp "${tmpDir}/result.png" $1
+rm -rf "$tmpDir"
